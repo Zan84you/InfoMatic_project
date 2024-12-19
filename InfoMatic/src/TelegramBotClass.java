@@ -23,7 +23,6 @@ public class TelegramBotClass extends TelegramLongPollingBot {
 
     private boolean scrivereScelta=false;
     private int scelta=-1;
-    private String scelta_txt="";
 
     @Override
     public String getBotUsername() {
@@ -62,7 +61,6 @@ public class TelegramBotClass extends TelegramLongPollingBot {
             case "/start":
                 sendStartMessageWithButton(chatId);
                 scrivereScelta=false;
-                scelta_txt="";
                 scelta=-1;
                 break;
             case "mkRequest":
@@ -70,7 +68,6 @@ public class TelegramBotClass extends TelegramLongPollingBot {
             case "/help":
                 sendTextMessage(chatId, "Lista comandi disponibili: \n/start -> avvia bot\n /help -> lista comandi\n /info -> informazioni su InfoMatic\n /guide -> ricerca guidata\n");
                 scrivereScelta=false;
-                scelta_txt="";
                 scelta=-1;
                 break;
             case "/info":
@@ -80,7 +77,6 @@ public class TelegramBotClass extends TelegramLongPollingBot {
                         "a semplificare la consultazione delle notizie, consentendo agli utenti di rimanere informati in " +
                         "modo semplice e efficace.");
                 scrivereScelta=false;
-                scelta_txt="";
                 scelta=-1;
                 break;
             case "/guide":
@@ -136,8 +132,8 @@ public class TelegramBotClass extends TelegramLongPollingBot {
         row.add(button1);
 
         InlineKeyboardButton button2 = new InlineKeyboardButton();
-        button2.setText("Data (day/month/year)");
-        button2.setCallbackData("scelta_data");
+        button2.setText("Eventi di oggi");
+        button2.setCallbackData("scelta_evoggi");
         row.add(button2);
 
         rows.add(row);
@@ -156,11 +152,11 @@ public class TelegramBotClass extends TelegramLongPollingBot {
     private void handleCallback(String callbackData, long chatId) {
         switch (callbackData) {
             case "scelta_notizia":
-                sendTextMessage(chatId, "Che notizia stai cercando?");
+                sendTextMessage(chatId, "Che notizia stai cercando (inseriscila come parola chiave)?");
                 scelta=0;
                 break;
             case "scelta_evento":
-                sendTextMessage(chatId, "Che evento stai cercando?");
+                sendTextMessage(chatId, "Che evento stai cercando (inseriscilo come parola chiave)?");
                 scelta=1;
                 break;
             case "scelta_notoggi":
@@ -208,10 +204,11 @@ public class TelegramBotClass extends TelegramLongPollingBot {
     }
 
     private void handleText(String text, long chatId) {
-        if (text.startsWith("/d")) {
-            sendTextMessage(chatId,"data presa");
-        } else {
-            sendTextMessage(chatId,"desso cerco");
+        if (scelta==0){
+            List<Article> notizie=WebScraperLaRep.notizieNome(text);
+            for (Article notizia:notizie){
+                sendTextMessage(chatId,notizia.toString());
+            }
         }
     }
 }
