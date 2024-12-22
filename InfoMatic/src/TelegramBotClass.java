@@ -188,7 +188,14 @@ public class TelegramBotClass extends TelegramLongPollingBot {
                 } catch (SQLException e) {
                     System.err.println("Errore durante la gestione del database: " + e.getMessage());
                 }
-
+                break;
+            case "scelta_top10art":
+                String[] top10=TicketOneWebScraper.top10Artists();
+                for (String element:top10){
+                    element=element.replace("Biglietti","");
+                    sendTextMessage(chatId,element);
+                }
+                break;
         }
     }
 
@@ -209,6 +216,8 @@ public class TelegramBotClass extends TelegramLongPollingBot {
             for (Article notizia:notizie){
                 sendTextMessage(chatId,notizia.toString());
             }
-        }
+        }/*else(scelta==1){
+            //pass
+        }*/
     }
 }
