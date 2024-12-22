@@ -66,7 +66,7 @@ public class TelegramBotClass extends TelegramLongPollingBot {
             case "mkRequest":
                 break;
             case "/help":
-                sendTextMessage(chatId, "Lista comandi disponibili: \n/start -> avvia bot\n /help -> lista comandi\n /info -> informazioni su InfoMatic\n /guide -> ricerca guidata\n");
+                sendTextMessage(chatId, "Lista comandi disponibili: \n/start -> avvia bot\n /help -> lista comandi\n /info -> informazioni su InfoMatic\n /quickres -> ricerca guidata\n");
                 scrivereScelta=false;
                 scelta=-1;
                 break;
@@ -79,7 +79,7 @@ public class TelegramBotClass extends TelegramLongPollingBot {
                 scrivereScelta=false;
                 scelta=-1;
                 break;
-            case "/guide":
+            case "/quickres":
                 sendGuideMessageWithButton(chatId);
                 break;
             default:
@@ -132,8 +132,8 @@ public class TelegramBotClass extends TelegramLongPollingBot {
         row.add(button1);
 
         InlineKeyboardButton button2 = new InlineKeyboardButton();
-        button2.setText("Eventi di oggi");
-        button2.setCallbackData("scelta_evoggi");
+        button2.setText("Top 10 artisti");
+        button2.setCallbackData("scelta_top10art");
         row.add(button2);
 
         rows.add(row);
@@ -163,7 +163,7 @@ public class TelegramBotClass extends TelegramLongPollingBot {
                 try {
                     ResultSet rs = db.eseguiQuery("SELECT * FROM notizie WHERE data = CURDATE()");
 
-                    if (db.leggiNotizie().isEmpty() || rs == null) {
+                    if (db.leggiNotizie().isEmpty() || !rs.next()) {
                         List<Article> notizie = WebScraperLaRep.notizieOggi();
                         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
                         for (Article notizia : notizie) {
