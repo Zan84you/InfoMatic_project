@@ -54,7 +54,7 @@ public class WebScraperLaRep {
                     Element data_estratta = aElements.size()>=2 ? aElements.get(1):aElements.get(0);
                     String data = data_estratta.text();
                     Articoli.add(new Article(title,description,data));
-                    if (cont++==9){
+                    if (cont++==5){
                         break;
                     }
                 }
