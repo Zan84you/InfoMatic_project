@@ -29,7 +29,6 @@ public class Database {
             pstmt.setDate(3, data);
 
             pstmt.executeUpdate();
-            System.out.println("Notizia inserita con successo.");
         } catch (SQLException e) {
             System.err.println("Errore durante l'inserimento della notizia: " + e.getMessage());
         }
@@ -44,7 +43,6 @@ public class Database {
             pstmt.setDate(3, data);
 
             pstmt.executeUpdate();
-            System.out.println("Evento inserito con successo.");
         } catch (SQLException e) {
             System.err.println("Errore durante l'inserimento dell'evento: " + e.getMessage());
         }
