@@ -15,8 +15,6 @@ import java.util.List;
 import java.sql.*;
 
 public class TelegramBotClass extends TelegramLongPollingBot {
-    private Database db = new Database();
-
     private static final String BOT_USERNAME = credenziali.get_username();
 
     private static final String BOT_TOKEN = credenziali.get_token();
@@ -66,7 +64,7 @@ public class TelegramBotClass extends TelegramLongPollingBot {
             case "mkRequest":
                 break;
             case "/help":
-                sendTextMessage(chatId, "Lista comandi disponibili: \n/start -> avvia bot\n /help -> lista comandi\n /info -> informazioni su InfoMatic\n /quickres -> ricerca guidata\n");
+                sendTextMessage(chatId, "Lista comandi disponibili: \n/start -> avvia bot\n /help -> lista comandi\n /info -> informazioni su InfoMatic\n /quickres -> ricerca rapida\n");
                 scrivereScelta=false;
                 scelta=-1;
                 break;
@@ -160,6 +158,10 @@ public class TelegramBotClass extends TelegramLongPollingBot {
                 scelta=1;
                 break;
             case "scelta_notoggi":
+                Database db = new Database();
+                try{
+                    Thread.sleep(1000);
+                }catch (Exception e){}
                 try {
                     ResultSet rs = db.eseguiQuery("SELECT * FROM notizie WHERE data = CURDATE()");
 
@@ -187,6 +189,9 @@ public class TelegramBotClass extends TelegramLongPollingBot {
                     }
                 } catch (SQLException e) {
                     System.err.println("Errore durante la gestione del database: " + e.getMessage());
+                }
+                finally {
+                    db.chiudiConnessione();
                 }
                 break;
             case "scelta_top10art":
@@ -216,8 +221,11 @@ public class TelegramBotClass extends TelegramLongPollingBot {
             for (Article notizia:notizie){
                 sendTextMessage(chatId,notizia.toString());
             }
-        }/*else(scelta==1){
-            //pass
-        }*/
+        }else if (scelta==1){
+            List<Article> eventi=TicketOneWebScraper.eventiNome(text);
+            for (Article evento:eventi){
+                sendTextMessage(chatId,evento.toString());
+            }
+        }
     }
 }
