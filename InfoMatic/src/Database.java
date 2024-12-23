@@ -20,6 +20,10 @@ public class Database {
         }
     }
 
+    public Connection getConnection() {
+        return this.connection;
+    }
+
     public void inserisciNotizia(String titolo, String descrizione, Date data) {
         String query = "INSERT INTO notizie (titolo, descrizione, data) VALUES (?, ?, ?)";
 
@@ -158,8 +162,7 @@ public class Database {
 
         @Override
         public String toString() {
-            return "ID: " + id +
-                    ", Titolo: " + titolo +
+            return "Titolo: " + titolo +
                     ", Luogo: " + luogo +
                     ", Data: " + data +
                     "\n";
