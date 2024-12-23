@@ -2,13 +2,13 @@ public class Article {
     //con articolo tratto sia notizia che evento
 
     private String title;
-    private String description;
+    private String description; //o luogo
     private String data;
 
-    public Article(String title, String description, String author) {
+    public Article(String title, String description, String data) {
         this.title = title;
         this.description = description;
-        this.data = author;
+        this.data = data;
     }
 
     public String getTitle() {
