@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import java.sql.*;
@@ -134,6 +135,11 @@ public class TelegramBotClass extends TelegramLongPollingBot {
         button2.setCallbackData("scelta_top10art");
         row.add(button2);
 
+        InlineKeyboardButton button3 = new InlineKeyboardButton();
+        button3.setText("Mostra eventi salvati");
+        button3.setCallbackData("eventi_salvati");
+        row.add(button3);
+
         rows.add(row);
         markup.setKeyboard(rows);
 
@@ -147,7 +153,34 @@ public class TelegramBotClass extends TelegramLongPollingBot {
         }
     }
 
+    private void sendSaveEventMessageWithButton(long chatId) {
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText("Vuoi salvare gli eventi trovati?");
+
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        InlineKeyboardButton button1 = new InlineKeyboardButton();
+        button1.setText("Salva");
+        button1.setCallbackData("salva_eventi");
+        row.add(button1);
+
+        rows.add(row);
+        markup.setKeyboard(rows);
+
+        message.setReplyMarkup(markup);
+
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void handleCallback(String callbackData, long chatId) {
+        Database db;
         switch (callbackData) {
             case "scelta_notizia":
                 sendTextMessage(chatId, "Che notizia stai cercando (inseriscila come parola chiave)?");
@@ -158,7 +191,7 @@ public class TelegramBotClass extends TelegramLongPollingBot {
                 scelta=1;
                 break;
             case "scelta_notoggi":
-                Database db = new Database();
+                db = new Database();
                 try{
                     Thread.sleep(1000);
                 }catch (Exception e){}
@@ -201,6 +234,51 @@ public class TelegramBotClass extends TelegramLongPollingBot {
                     sendTextMessage(chatId,element);
                 }
                 break;
+            case "eventi_salvati":
+                db = new Database();
+                List<Database.Evento> eventi=db.leggiEventi();
+                for (Database.Evento e:eventi){
+                    sendTextMessage(chatId,e.toString());
+                }
+                break;
+            case "salva_eventi":
+                db = new Database();
+                try{
+                    Thread.sleep(1000);
+                }catch (Exception e){}
+
+                try {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+                    for (Article a : eventi_cercati) {
+                        String dataString = a.getData();
+                        Date utilDate = null;
+                        try {
+                            utilDate = dateFormat.parse(dataString);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
+
+                        String query = "SELECT * FROM eventi WHERE titolo = ? AND data = ?";
+                        try (PreparedStatement stmt = db.getConnection().prepareStatement(query)) {
+                            stmt.setString(1, a.getTitle());
+                            stmt.setDate(2, sqlDate);
+                            ResultSet rs = stmt.executeQuery();
+
+                            if (!rs.next()) {
+                                db.inserisciEvento(a.getTitle(), a.getDescription(), sqlDate);
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Errore durante la gestione del database: " + e.getMessage());
+                } finally {
+                    db.chiudiConnessione();
+                }
+
+                break;
         }
     }
 
@@ -215,6 +293,7 @@ public class TelegramBotClass extends TelegramLongPollingBot {
         }
     }
 
+    List<Article> eventi_cercati;
     private void handleText(String text, long chatId) {
         if (scelta==0){
             List<Article> notizie=WebScraperLaRep.notizieNome(text);
@@ -222,9 +301,14 @@ public class TelegramBotClass extends TelegramLongPollingBot {
                 sendTextMessage(chatId,notizia.toString());
             }
         }else if (scelta==1){
+            eventi_cercati= new LinkedList<>();
             List<Article> eventi=TicketOneWebScraper.eventiNome(text);
             for (Article evento:eventi){
                 sendTextMessage(chatId,evento.toString());
+            }
+            if (!eventi.isEmpty()){
+                sendSaveEventMessageWithButton(chatId);
+                eventi_cercati=eventi;
             }
         }
     }
